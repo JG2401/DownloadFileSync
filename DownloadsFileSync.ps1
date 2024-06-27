@@ -1,5 +1,4 @@
-﻿$sourcePath = "Downloads"
-
+﻿$sourcePath = "C:\Users\YourUsername\Downloads"
 $destinationPath = "\\YourServer\YourShare"
 $fileExtensions = @("exe", "msi", "iso", "img")
 $pattern = "[A-Za-z]+"
@@ -35,7 +34,7 @@ while ($true) {
             $destFolder = $extensionFolder
         }
         
-        Copy-Item -Path $file.FullName -Destination "$($destFolder)\$($now.ToString("yyyy-mm-dd"))_$($file.Name)" -Force
+        Copy-Item -Path $file.FullName -Destination "$($destFolder)\$($now.ToString("yyyy-MM-dd"))_$($file.Name)" -Force
     }
 
     Start-Sleep -Seconds 600
