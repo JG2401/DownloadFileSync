@@ -1,11 +1,12 @@
-﻿$sourcePath = "C:\Users\YourUsername\Downloads"
-$destinationPath = "\\YourServer\YourShare"
+﻿$sourcePath = "C:\Users\jonas\Downloads"
+$destinationPath = "\\synology-ds720\DS720\Software"
 $fileExtensions = @("exe", "msi", "iso", "img")
 $pattern = "[A-Za-z]+"
-$timeSpan = New-TimeSpan -Minutes 600
+$timeSpan = New-TimeSpan -Seconds 600
 
 while ($true) {
     $now = Get-Date
+    $counter = 0
     
     $files = Get-ChildItem -Path $sourcePath -File | Where-Object {
         $_.LastWriteTime -gt $now.Subtract($timeSpan) -and
@@ -35,7 +36,30 @@ while ($true) {
         }
         
         Copy-Item -Path $file.FullName -Destination "$($destFolder)\$($now.ToString("yyyy-MM-dd"))_$($file.Name)" -Force
+        $counter++
     }
 
-    Start-Sleep -Seconds 600
+    
+    #NOTIFICATION
+    [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null
+    $template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
+
+    $toastXml = [xml] $template.GetXml()
+    $toastXml.GetElementsByTagName("text").Item(0).AppendChild($toastXml.CreateTextNode("Files synchronized")) > $null
+    $toastXml.GetElementsByTagName("text").Item(1).AppendChild($toastXml.CreateTextNode("$($counter) of $($files.Count)")) > $null
+
+    $xml = New-Object Windows.Data.Xml.Dom.XmlDocument
+    $xml.LoadXml($toastXml.OuterXml)
+
+    $toast = [Windows.UI.Notifications.ToastNotification]::new($xml)
+    $toast.Tag = "DownloadsFileSync"
+    $toast.Group = "DownloadsFileSync"
+    $toast.ExpirationTime = [DateTimeOffset]::Now.AddMinutes(1)
+
+    $notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("DownloadsFileSync")
+    $notifier.Show($toast);
+
+
+    #START-SLEEP
+    Start-Sleep -Seconds $timeSpan.TotalSeconds
 }
