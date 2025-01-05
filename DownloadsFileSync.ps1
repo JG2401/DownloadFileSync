@@ -39,25 +39,28 @@ while ($true) {
         $counter++
     }
 
-    
-    #NOTIFICATION
-    [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null
-    $template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
 
-    $toastXml = [xml] $template.GetXml()
-    $toastXml.GetElementsByTagName("text").Item(0).AppendChild($toastXml.CreateTextNode("Files synchronized")) > $null
-    $toastXml.GetElementsByTagName("text").Item(1).AppendChild($toastXml.CreateTextNode("$($counter) of $($files.Count)")) > $null
+    if($files.Count -gt 0)
+    {
+        #NOTIFICATION
+        [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null
+        $template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
 
-    $xml = New-Object Windows.Data.Xml.Dom.XmlDocument
-    $xml.LoadXml($toastXml.OuterXml)
+        $toastXml = [xml] $template.GetXml()
+        $toastXml.GetElementsByTagName("text").Item(0).AppendChild($toastXml.CreateTextNode("Files synchronized")) > $null
+        $toastXml.GetElementsByTagName("text").Item(1).AppendChild($toastXml.CreateTextNode("$($counter) of $($files.Count)")) > $null
 
-    $toast = [Windows.UI.Notifications.ToastNotification]::new($xml)
-    $toast.Tag = "DownloadsFileSync"
-    $toast.Group = "DownloadsFileSync"
-    $toast.ExpirationTime = [DateTimeOffset]::Now.AddMinutes(1)
+        $xml = New-Object Windows.Data.Xml.Dom.XmlDocument
+        $xml.LoadXml($toastXml.OuterXml)
 
-    $notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("DownloadsFileSync")
-    $notifier.Show($toast);
+        $toast = [Windows.UI.Notifications.ToastNotification]::new($xml)
+        $toast.Tag = "DownloadsFileSync"
+        $toast.Group = "DownloadsFileSync"
+        $toast.ExpirationTime = [DateTimeOffset]::Now.AddMinutes(1)
+
+        $notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("DownloadsFileSync")
+        $notifier.Show($toast);
+    }
 
 
     #START-SLEEP
